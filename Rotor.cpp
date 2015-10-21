@@ -5,52 +5,63 @@
 using namespace std;
 
 Rotor::Rotor(char* file) {
+
 	rotations = 0;
 	ifstream input;
 	input.open(file);
+
 	if (input.is_open()) {
+		
 		int n;
 		int index = 0;
 		input >> ws;
-		forwardMap.reserve(26);
-		backwardMap.reserve(26);
+		forwardMap.reserve(lettersInAlphabet);
+		backwardMap.reserve(lettersInAlphabet);
+
 		while (input >> n) {
 			forwardMap[index] = n;
 			backwardMap[n] = index;
 			index++;
 		}
+
 		input.close();	
+
 	} else {
-		std::cerr << "File not opened" << std::endl;
+		cerr << "File not opened" << endl;
 	}
 }
 
-Rotor::Rotor() {
-}
-
-Rotor::~Rotor(){
-}
-
 int Rotor::inputOutput(int n) {
-	return (forwardMap[(n + rotations) % 26] - rotations + 26) % 26;	
+	//Take into account the shift.
+	n = (n + rotations) % lettersInAlphabet;
+	//Now map the value to the respective output.
+	n = forwardMap[n]; 
+	//Now take into account the shift again by subtracting the rotations
+	//and return the value. Note I add 26 so that mod function doesn't
+	//output unwanted negative values.
+	return (n - rotations + lettersInAlphabet) % lettersInAlphabet;
 }
 
 int Rotor::inverseInputOutput(int n) {
-	return (backwardMap[(n + rotations) % 26] - rotations + 26) % 26;
+	//Take into account the shift.
+	n = (n + rotations) % lettersInAlphabet;
+	//Now map the value to the respective output.
+	n = backwardMap[n]; 
+	//Now take into account the shift again by subtracting the rotations
+	//and return the value. Note I add 26 so that mod function doesn't
+	//output unwanted negative values.
+	return (n - rotations + lettersInAlphabet) % lettersInAlphabet;
 }
 
 int Rotor::getRotations() {
 	return rotations;
 }
 
-void Rotor::resetRotations() {
-	rotations = 0;
-}
-
-bool Rotor::hasRotatedEntirely() {
+bool Rotor:: rotatedEntirely() {
 	return rotations == 26;
 }
 
-void Rotor::rotate() {	
-	rotations++;
+int Rotor::rotate() {	
+	rotations = (rotations + 1) % lettersInAlphabet;
+	return rotations;
 }

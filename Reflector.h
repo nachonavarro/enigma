@@ -5,8 +5,6 @@
 
 class Reflector : public InputOutputMap {
 public:
-	Reflector();
-	~Reflector();
 	int inputOutput(int n);
 };
 

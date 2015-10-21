@@ -11,7 +11,7 @@
 using namespace std;
 
 char enigma(char);
-void rotateRotors();
+void rotateRotors(int);
 
 vector<Rotor*> rotors;
 int numOfRotors;
@@ -22,7 +22,7 @@ Reflector* reflector;
 int main(int argc, char **argv) {
   
 	if (argc < 2) {
-		cerr << "Wrong input. Please try again" << endl;
+		throw invalid_argument("wrong number of inputs");
 		return 1;
 	}
 
@@ -41,18 +41,24 @@ int main(int argc, char **argv) {
 	reflector = new Reflector();
 	
 	char current;
+	cin >> ws;
+
 	while (cin >> current) {
-		
-		if (!isupper(current)) {
-			cout << " ";	
+		try {
+			cout << enigma(current);
+		} catch (invalid_argument& e) {
+			cerr << "Please input only capital letters" << endl;
 		}
-		cout << enigma(current);
 	}
 	
 	return 0;
 }
 
 char enigma(char c) {
+
+	if (!isalpha(c) || !isupper(c)) {
+		throw invalid_argument("Capital letters only");
+	}
 
 	// Since we are working with numbers, convert char (A,B,C..) to (0,1,2...)
 	int n = c - 'A';
@@ -61,14 +67,16 @@ char enigma(char c) {
 	n = plugboard->inputOutput(n);
 
 	//Then through the rotors.
-	for (int i = 0; i < numOfRotors; i++) {
-		n = rotors[i]->inputOutput(n);
+	for (vector<Rotor*>::iterator it = rotors.begin(); 
+			it != rotors.end(); ++it) {
+		n = (*it)->inputOutput(n);
 	}
 
 	//Then through the reflector.
 	n = reflector->inputOutput(n);
 	
-	for (vector<Rotor*>::reverse_iterator it = rotors.rbegin(); it != rotors.rend(); ++it) {
+	for (vector<Rotor*>::reverse_iterator it = rotors.rbegin(); 
+			it != rotors.rend(); ++it) {
 		n = (*it)->inverseInputOutput(n);
 	}
 
@@ -76,24 +84,19 @@ char enigma(char c) {
 	n = plugboard->inputOutput(n);
 
 	//Before returning, rotate rotors for next call.
-	if (numOfRotors > 0) {
-		rotateRotors();
-	}
+	//Note if there are 0 rotors the rotateRotors(0) does nothing as
+	//expected.
+	rotateRotors(0);
 	
 	//Convert int to char and return.
 	return (n % 26) + 'A';
 
 }
 
-void rotateRotors() {
-	//First one always rotates.
-	rotors[0]->rotate();
-
-	for (int i = 0; i < numOfRotors - 1; i++) {
-		if (rotors[i]->hasRotatedEntirely()) {
-			rotors[i]->resetRotations();
-			rotors[i+1]->rotate();
-		}	
+//Recursively rotate the rotors. If the the i'th rotor rotates and
+//the rotations become 0, then you rotate the i'th + 1 rotor and so on.
+void rotateRotors(int rotorNumber) {
+	if (rotorNumber < rotors.size() && rotors[rotorNumber]->rotate() == 0) {
+		rotateRotors(rotorNumber + 1);
 	}
 }
-

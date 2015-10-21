@@ -3,6 +3,8 @@
 
 class InputOutputMap {
 public:
-	virtual int inputOutput(int x) = 0;
+	static const int lettersInAlphabet = 26;
+	virtual int inputOutput(int n) = 0;
 };
+
 #endif
